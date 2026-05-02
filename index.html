@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spa Rank Extractor — Bangalore Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F8F9FA;
+    --surface: #FFFFFF;
+    --border: #E2E8F0;
+    --text: #1A202C;
+    --muted: #718096;
+    --accent: #1A1A2E;
+    --green: #48BB78;
+    --yellow: #ECC94B;
+    --red: #FC8181;
+    --blue: #63B3ED;
+    --brand-indriya: #0F3460;
+    --brand-niva: #1B4332;
+    --brand-seven: #7B2D8B;
+    --brand-southern: #B5451B;
+    --brand-ziva: #0D6986;
+    --brand-nirmaya: #3D405B;
+  }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  .header {
+    background: var(--accent);
+    color: white;
+    padding: 24px 32px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .header h1 { font-size: 20px; font-weight: 700; }
+  .header p { font-size: 12px; opacity: 0.7; margin-top: 4px; }
+
+  .controls {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .control-group { display: flex; flex-direction: column; gap: 6px; }
+  .control-group label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  select, input {
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+  }
+
+  select:focus, input:focus { border-color: var(--accent); }
+
+  .btn {
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover:not(:disabled) { opacity: 0.85; transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-export { background: #2D6A4F; color: white; }
+  .btn-export:hover:not(:disabled) { opacity: 0.85; }
+  .btn-export:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .progress-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    display: none;
+  }
+
+  .progress-section.visible { display: block; }
+
+  .progress-bar-wrap {
+    background: var(--bg);
+    border-radius: 999px;
+    height: 10px;
+    overflow: hidden;
+    margin: 12px 0;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #4A6CF7);
+    border-radius: 999px;
+    width: 0%;
+    transition: width 0.3s;
+  }
+
+  .progress-label { font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; }
+  .log-box {
+    background: #0D1117;
+    color: #7EE787;
+    font-family: monospace;
+    font-size: 11px;
+    padding: 12px;
+    border-radius: 8px;
+    height: 160px;
+    overflow-y: auto;
+    margin-top: 12px;
+    line-height: 1.8;
+  }
+
+  .results-section { display: none; }
+  .results-section.visible { display: block; }
+
+  .brand-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+
+  .brand-header {
+    padding: 16px 20px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .brand-header h3 { font-size: 15px; font-weight: 700; }
+  .brand-header span { font-size: 12px; opacity: 0.8; }
+
+  .brand-stats {
+    display: flex;
+    gap: 20px;
+    padding: 12px 20px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stat { display: flex; flex-direction: column; }
+  .stat-val { font-size: 20px; font-weight: 700; }
+  .stat-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  .stat-val.green { color: #276749; }
+  .stat-val.yellow { color: #975A16; }
+  .stat-val.red { color: #C53030; }
+  .stat-val.grey { color: var(--muted); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th {
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+  }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #F7FAFC; }
+
+  .rank-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 11px;
+    min-width: 42px;
+    text-align: center;
+  }
+  .rank-top3 { background: #C6F6D5; color: #276749; }
+  .rank-top10 { background: #FEFCBF; color: #975A16; }
+  .rank-low { background: #FED7D7; color: #C53030; }
+  .rank-nr { background: #EDF2F7; color: #718096; }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+  }
+
+  .export-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .export-bar.visible { display: flex; }
+  .export-bar p { font-size: 13px; color: var(--muted); }
+  .export-bar strong { color: var(--text); }
+
+  .note-box {
+    background: #EBF8FF;
+    border: 1px solid #BEE3F8;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 12px;
+    color: #2C5282;
+    margin-bottom: 20px;
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  footer { text-align: center; font-size: 11px; color: var(--muted); margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>🏨 Spa Keyword Rank Extractor — Bangalore Portfolio</h1>
+    <p>Live Google rankings for 6 brands × 25 keywords via SerpAPI · Bangalore, India</p>
+  </div>
+  <div style="text-align:right; font-size:11px; opacity:0.6;">
+    Girish Kumar G<br>Programmatic SEO Manager<br>Father of SEO
+  </div>
+</div>
+
+<div class="controls">
+  <div class="control-group">
+    <label>Date Label (for tracking)</label>
+    <input type="text" id="dateLabel" value="May-26" placeholder="e.g. May-26">
+  </div>
+  <div class="control-group">
+    <label>Brand Filter</label>
+    <select id="brandFilter">
+      <option value="all">All 6 Brands (150 queries)</option>
+      <option value="Indriya Wellness">Indriya Wellness only</option>
+      <option value="Niva Wellness">Niva Wellness only</option>
+      <option value="Seven Days Spa">Seven Days Spa only</option>
+      <option value="Southern Spa">Southern Spa only</option>
+      <option value="Ziva Spa">Ziva Spa only</option>
+      <option value="Nirmaya Spa">Nirmaya Spa only</option>
+    </select>
+  </div>
+  <button class="btn btn-primary" id="startBtn" onclick="startExtraction()">
+    ▶ Extract Rankings
+  </button>
+</div>
+
+<div class="note-box">
+  ℹ️ <strong>Note:</strong> SerpAPI does not support historical date queries — rankings reflect <strong>today's live Google results</strong> from Bangalore, IN. Use the date label above to tag each month's run. Run this tool at the start of each month to build your tracking history.
+</div>
+
+<div class="progress-section" id="progressSection">
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <strong style="font-size:14px;">Extracting Rankings...</strong>
+    <span id="progressCount" style="font-size:12px; color:var(--muted);">0 / 0</span>
+  </div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+  <div class="progress-label">
+    <span id="currentKw" style="color:var(--muted);">Starting...</span>
+    <span id="progressPct">0%</span>
+  </div>
+  <div class="log-box" id="logBox"></div>
+</div>
+
+<div class="export-bar" id="exportBar">
+  <p><strong>✅ Extraction complete!</strong> Results ready for download.</p>
+  <button class="btn btn-export" onclick="downloadCSV()" id="downloadBtn">⬇ Download CSV</button>
+</div>
+
+<div class="results-section" id="resultsSection"></div>
+
+<footer>Girish Kumar G · Programmatic SEO Manager · Father of SEO</footer>
+
+<script>
+const BRANDS = {
+  "Indriya Wellness": {
+    domains: ["indriyawellness.in"],
+    color: "#0F3460",
+    keywords: [
+      "spa in koramangala","best spa in koramangala","massage spa in koramangala",
+      "body massage koramangala","spa near koramangala bangalore","deep tissue massage koramangala",
+      "swedish massage koramangala","stress relief massage koramangala","spa for office goers koramangala",
+      "full body massage koramangala","spa in jayanagar","best spa in jayanagar bangalore",
+      "massage spa jayanagar","body massage jayanagar","aromatherapy massage jayanagar",
+      "couples spa koramangala","spa packages koramangala","luxury spa koramangala",
+      "wellness spa bangalore koramangala","spa near 6th block koramangala",
+      "indriya wellness spa","neck and shoulder massage bangalore","back pain massage koramangala",
+      "corporate wellness spa bangalore","spa open now koramangala"
+    ]
+  },
+  "Niva Wellness": {
+    domains: ["nivawellnessspa.in"],
+    color: "#1B4332",
+    keywords: [
+      "spa in jp nagar","best spa in jp nagar bangalore","massage spa jp nagar",
+      "body massage jp nagar","spa near jp nagar","swedish massage jp nagar",
+      "aromatherapy jp nagar","deep tissue massage jp nagar","lomi lomi massage bangalore",
+      "full body massage jp nagar","spa in silk board","best spa silk board bangalore",
+      "massage spa silk board","body massage silk board","spa near silk board junction",
+      "couples massage jp nagar","spa packages jp nagar","ladies spa jp nagar",
+      "spa for women jp nagar bangalore","wellness spa jp nagar bangalore",
+      "niva wellness spa","relaxing massage jp nagar","facial spa jp nagar",
+      "spa open today jp nagar","affordable spa jp nagar"
+    ]
+  },
+  "Seven Days Spa": {
+    domains: ["sevendaysspa.in"],
+    color: "#7B2D8B",
+    keywords: [
+      "spa in btm layout","best spa btm layout bangalore","massage spa btm layout",
+      "body massage btm layout","spa near btm layout","spa in hsr layout",
+      "best spa hsr layout","massage spa hsr layout bangalore","body massage hsr layout",
+      "spa near hsr layout","spa in bannerghatta road","massage spa bannerghatta road",
+      "best spa bannerghatta road bangalore","body massage bannerghatta road","spa near arekere bangalore",
+      "couples spa btm layout","thai massage bangalore","ayurvedic massage btm layout",
+      "deep tissue massage btm layout","spa packages bangalore south",
+      "seven days spa bangalore","swedish massage btm layout","spa under 1000 bangalore",
+      "weekend spa btm layout","spa open sunday btm layout"
+    ]
+  },
+  "Southern Spa": {
+    domains: ["southernspa.in"],
+    color: "#B5451B",
+    keywords: [
+      "spa in madiwala","best spa in madiwala bangalore","massage spa madiwala",
+      "body massage madiwala","spa near madiwala","sauna spa madiwala",
+      "day spa madiwala bangalore","oil massage madiwala","full body massage madiwala",
+      "deep tissue massage madiwala","aromatherapy madiwala","swedish massage madiwala",
+      "couples spa madiwala","spa packages madiwala","facial spa madiwala",
+      "wellness spa madiwala bangalore","southern spa bangalore","spa near btm 1st stage",
+      "spa near hsr madiwala","ladies spa madiwala","affordable spa madiwala",
+      "spa open now madiwala","body scrub madiwala","relaxing massage madiwala bangalore",
+      "best body massage near madiwala"
+    ]
+  },
+  "Ziva Spa": {
+    domains: ["zivaspa.in"],
+    color: "#0D6986",
+    keywords: [
+      "spa in jp nagar 7th phase","ziva spa jp nagar","massage spa jp nagar 7th phase",
+      "pain relief massage jp nagar","anxiety relief spa bangalore","fatigue recovery massage bangalore",
+      "immunity boost massage bangalore","skin whitening spa bangalore","anti aging spa bangalore",
+      "benefit based spa bangalore","best spa jp nagar phase 7","luxury spa jp nagar bangalore",
+      "body massage jp nagar 7th phase","deep tissue massage jp nagar bangalore","swedish massage jp nagar bangalore",
+      "ayurvedic massage jp nagar","aromatherapy jp nagar bangalore","couples massage jp nagar bangalore",
+      "spa packages jp nagar bangalore","60 min massage jp nagar",
+      "120 min spa jp nagar","spa discount jp nagar bangalore","wellness therapy bangalore south",
+      "spa near sarakki bangalore","spa near jp nagar 6th phase"
+    ]
+  },
+  "Nirmaya Spa": {
+    domains: ["nirmayaspa.com"],
+    color: "#3D405B",
+    keywords: [
+      "nirmaya spa bangalore","spa in bangalore","best spa in bangalore",
+      "massage spa bangalore","body massage in bangalore","ayurvedic spa bangalore",
+      "ayurvedic massage bangalore","abhyanga massage bangalore","panchakarma spa bangalore",
+      "kerala massage bangalore","shirodhara treatment bangalore","herbal potli massage bangalore",
+      "traditional indian massage bangalore","wellness spa bangalore","holistic spa bangalore",
+      "luxury spa bangalore","full body massage bangalore","deep tissue massage bangalore",
+      "couples spa bangalore","spa packages bangalore","spa gift voucher bangalore",
+      "day spa bangalore","best rated spa bangalore","stress relief spa bangalore",
+      "spa near me bangalore"
+    ]
+  }
+};
+
+let allResults = {};
+let logEl, logBox;
+
+function log(msg) {
+  const line = document.createElement('div');
+  const time = new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  line.textContent = `[${time}] ${msg}`;
+  logBox.appendChild(line);
+  logBox.scrollTop = logBox.scrollHeight;
+}
+
+function rankBadge(r) {
+  if (r === 'NR') return `<span class="rank-badge rank-nr">NR</span>`;
+  const n = parseInt(r);
+  if (n <= 3) return `<span class="rank-badge rank-top3">#${n}</span>`;
+  if (n <= 10) return `<span class="rank-badge rank-top10">#${n}</span>`;
+  return `<span class="rank-badge rank-low">#${n}</span>`;
+}
+
+async function fetchRank(keyword, domains) {
+  const systemPrompt = `You are a rank checking assistant. Given a Google search result JSON, find if any of these domains appear in the organic_results: ${domains.join(', ')}. 
+  Return ONLY a JSON object like: {"rank": 5} if found at position 5, or {"rank": "NR"} if not found in top 20.
+  Check the "link" field in each organic result. Do not include any other text.`;
+
+  const userPrompt = `Search Google for: "${keyword}" with location=Bangalore,Karnataka,India gl=in hl=en num=20. Then check if any of these domains appear: ${domains.join(', ')}. Return only {"rank": N} or {"rank": "NR"}.`;
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userPrompt }],
+        mcp_servers: [{
+          type: "url",
+          url: "https://mcp.serpapi.com/09e2f6c765682d22fbf284585179631431e5c28738a0f019e38aaa6f359ea889/mcp",
+          name: "serpapi"
+        }]
+      })
+    });
+
+    const data = await response.json();
+    const text = data.content?.filter(b => b.type === 'text').map(b => b.text).join('') || '{"rank":"NR"}';
+    const clean = text.replace(/```json|```/g, '').trim();
+    // Extract JSON from response
+    const match = clean.match(/\{[^}]+\}/);
+    if (match) {
+      const parsed = JSON.parse(match[0]);
+      return parsed.rank !== undefined ? parsed.rank : 'NR';
+    }
+    return 'NR';
+  } catch(e) {
+    return 'NR';
+  }
+}
+
+async function startExtraction() {
+  const btn = document.getElementById('startBtn');
+  const brandFilter = document.getElementById('brandFilter').value;
+  const dateLabel = document.getElementById('dateLabel').value || 'May-26';
+
+  // Build query list
+  let queries = [];
+  for (const [brand, data] of Object.entries(BRANDS)) {
+    if (brandFilter !== 'all' && brand !== brandFilter) continue;
+    for (const kw of data.keywords) {
+      queries.push({ brand, keyword: kw, domains: data.domains });
+    }
+  }
+
+  const total = queries.length;
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spinner"></span>Running ${total} queries...`;
+
+  document.getElementById('progressSection').classList.add('visible');
+  document.getElementById('resultsSection').classList.remove('visible');
+  document.getElementById('exportBar').classList.remove('visible');
+  logBox = document.getElementById('logBox');
+  logBox.innerHTML = '';
+  allResults = {};
+
+  log(`Starting extraction: ${total} queries · Location: Bangalore, IN`);
+
+  let done = 0;
+  // Process in batches of 5 for speed
+  const BATCH = 5;
+  for (let i = 0; i < queries.length; i += BATCH) {
+    const batch = queries.slice(i, i + BATCH);
+    await Promise.all(batch.map(async (q) => {
+      const rank = await fetchRank(q.keyword, q.domains);
+      if (!allResults[q.brand]) allResults[q.brand] = {};
+      allResults[q.brand][q.keyword] = { rank, date: dateLabel };
+      done++;
+      const pct = Math.round((done / total) * 100);
+      document.getElementById('progressBar').style.width = pct + '%';
+      document.getElementById('progressCount').textContent = `${done} / ${total}`;
+      document.getElementById('progressPct').textContent = pct + '%';
+      document.getElementById('currentKw').textContent = `✓ "${q.keyword}" → ${rank === 'NR' ? 'Not Ranked' : '#' + rank}`;
+      const rankStr = rank === 'NR' ? '—' : `#${rank}`;
+      log(`[${q.brand}] "${q.keyword}" → ${rankStr}`);
+    }));
+  }
+
+  log(`✅ Done! ${total} keywords checked.`);
+  btn.disabled = false;
+  btn.innerHTML = '▶ Extract Rankings';
+  renderResults(dateLabel);
+  document.getElementById('exportBar').classList.add('visible');
+}
+
+function renderResults(dateLabel) {
+  const section = document.getElementById('resultsSection');
+  section.classList.add('visible');
+  section.innerHTML = '';
+
+  for (const [brand, data] of Object.entries(BRANDS)) {
+    if (!allResults[brand]) continue;
+    const kwResults = allResults[brand];
+    const ranks = Object.values(kwResults).map(v => v.rank === 'NR' ? null : parseInt(v.rank)).filter(Boolean);
+    const top3 = ranks.filter(r => r <= 3).length;
+    const top10 = ranks.filter(r => r > 3 && r <= 10).length;
+    const low = ranks.filter(r => r > 10).length;
+    const nr = 25 - ranks.length;
+
+    const card = document.createElement('div');
+    card.className = 'brand-card';
+    card.innerHTML = `
+      <div class="brand-header" style="background:${data.color}">
+        <h3>${brand}</h3>
+        <span>${data.domains[0]} · ${dateLabel}</span>
+      </div>
+      <div class="brand-stats">
+        <div class="stat"><span class="stat-val green">${top3}</span><span class="stat-lbl">Top 3</span></div>
+        <div class="stat"><span class="stat-val yellow">${top10}</span><span class="stat-lbl">Top 10</span></div>
+        <div class="stat"><span class="stat-val red">${low}</span><span class="stat-lbl">Rank 11+</span></div>
+        <div class="stat"><span class="stat-val grey">${nr}</span><span class="stat-lbl">Not Ranked</span></div>
+        <div class="stat"><span class="stat-val" style="color:${data.color}">${ranks.length > 0 ? (ranks.reduce((a,b)=>a+b,0)/ranks.length).toFixed(1) : '—'}</span><span class="stat-lbl">Avg Rank</span></div>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Keyword</th>
+              <th>${dateLabel} Rank</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.keywords.map((kw, i) => {
+              const r = kwResults[kw]?.rank || 'NR';
+              return `<tr>
+                <td style="color:var(--muted); font-size:11px">${i+1}</td>
+                <td>${kw}</td>
+                <td>${rankBadge(r)}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+    section.appendChild(card);
+  }
+}
+
+function downloadCSV() {
+  const dateLabel = document.getElementById('dateLabel').value || 'May-26';
+  let csv = 'Brand,Domain,Keyword,Rank (' + dateLabel + ')\n';
+  for (const [brand, data] of Object.entries(BRANDS)) {
+    if (!allResults[brand]) continue;
+    for (const kw of data.keywords) {
+      const r = allResults[brand][kw]?.rank || 'NR';
+      csv += `"${brand}","${data.domains[0]}","${kw}","${r}"\n`;
+    }
+  }
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `Spa_Rankings_Bangalore_${dateLabel}.csv`;
+  a.click();
+}
+</script>
+</body>
+</html>
